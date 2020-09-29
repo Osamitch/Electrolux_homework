@@ -26,8 +26,8 @@ Additionally:
 #ifndef ELLUX_USART_API_H
 #define ELLUX_USART_API_H
 
-#include <cstdint>
-#include <cstdbool>
+#include <stdint.h>
+#include <stdbool.h>
 
 /*
     Enum for status codes to avoid magic return numbers 
@@ -62,6 +62,24 @@ typedef enum
 } ellux_usart_parity_t;
 
 /*
+    Enum for USART hardware blocks 
+    Presumably, this variable must lead to memory address of given USART hardware block
+    Which is platform-specific
+*/
+typedef enum
+{
+    ELLUX_USART1 = 1,
+    ELLUX_USART2 = 2,
+    ELLUX_USART3 = 3,
+    ELLUX_USART4 = 4,
+    ELLUX_USART5 = 5,
+    ELLUX_USART6 = 6,
+    ELLUX_USART7 = 7,
+    ELLUX_USART8 = 8
+    //  number of modules must be platform-specific
+} ellux_usart_hwblock_t;
+
+/*
     Struct to set init options
 */
 typedef struct _ELLUX_USART_INIT_T
@@ -85,23 +103,6 @@ typedef struct _ELLUX_USART_INIT_T
     Forward declaration of main handle struct
 */
 typedef struct _ELLUX_USART_HANDLE_T ellux_usart_handle_t;
-/*
-    Enum for USART hardware blocks 
-    Presumably, this variable must lead to memory address of given USART hardware block
-    Which is platform-specific
-*/
-typedef enum
-{
-    ELLUX_USART1 = 1,
-    ELLUX_USART2 = 2,
-    ELLUX_USART3 = 3,
-    ELLUX_USART4 = 4,
-    ELLUX_USART5 = 5,
-    ELLUX_USART6 = 6,
-    ELLUX_USART7 = 7,
-    ELLUX_USART8 = 8
-    //  number of modules must be platform-specific
-} ellux_usart_hwblock_t;
 
 /*
     Aliases for callback function pointers
@@ -135,7 +136,7 @@ struct _ELLUX_USART_HANDLE_T
     uint32_t RxCounter;// Counts how many bytes was recieved, needed to invoke Rxcallback
 
     ellux_usart_callback_t* RxCallbackPtr; // pointer to reception callback function
-    
+
 };
 
 /*
