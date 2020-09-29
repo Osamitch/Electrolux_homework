@@ -39,7 +39,7 @@ ellux_usart_handle_t Uart1, Uart2;
 uint8_t Buffers[MAX_BUFFERS][128];
 uint8_t RxIndex=0, TxIndex=0;
 ellux_usart_status_t ErrorCode;
-bool Recieved=false, Transmitted = false, Transmitting=false;
+bool Recieved=false, Transmitted = false;
 
 static void Uart1Init();
 static void Uart2Init();
@@ -55,6 +55,7 @@ int main(void)
     assert(ErrorCode==0);
     while(1)
     {
+        // Buffers are used in turn, FIFO style
         if(Recieved)
         {
             Recieved=false;

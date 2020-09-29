@@ -52,7 +52,7 @@ typedef enum
 } ellux_usart_mode_t;
 
 /*
-    Enum for status codes to avoid magic return numbers 
+    Enum for parity bit mode 
 */
 typedef enum 
 {
@@ -105,7 +105,7 @@ typedef struct _ELLUX_USART_INIT_T
 typedef struct _ELLUX_USART_HANDLE_T ellux_usart_handle_t;
 
 /*
-    Aliases for callback function pointers
+    Alias for callback function pointer
 */
 typedef void (ellux_usart_callback_t)(ellux_usart_handle_t* const uarthandler);
 
@@ -114,12 +114,12 @@ typedef void (ellux_usart_callback_t)(ellux_usart_handle_t* const uarthandler);
 */
 struct _ELLUX_USART_HANDLE_T
 {
-    ellux_usart_hwblock_t HwBlock;
+    ellux_usart_hwblock_t HwBlock;// See above
 
     bool IsInited; // this variable may be useful if user want to change options after
                    // initialisation, for example to restart USART module to make changes
 
-    ellux_usart_status_t ErrorCode;// 
+    ellux_usart_status_t ErrorCode;// Keeps last status code for convinience
 
     uint8_t* TxBufPtr; //Pointer to buffer to transmit
 
@@ -140,20 +140,20 @@ struct _ELLUX_USART_HANDLE_T
 };
 
 /*
-    Fills in init struct with default parameters 
+    Fills in init struct with default parameters
     After that, user must change them accordingly to his preferences
 */
 void ELLUX_USART_DefaultConstruct(ellux_usart_init_t* const uartinit);
 
 /*
     Initialisation of given USART/UART module 
-    fields belonging to transmitter/reciever,are initialised with NULL
+    Fields belonging to transmitter/reciever are initialised with NULL
     Returns status code
 */
 ellux_usart_status_t ELLUX_USART_Init(ellux_usart_handle_t* const uarthandler, const ellux_usart_init_t* const uartinit);
 
 /*
-    Denitialisation of given USART/UART module,
+    Denitialisation of given USART/UART module
     Stopping all communications
     Returns status code
 */
