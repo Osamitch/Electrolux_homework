@@ -66,13 +66,13 @@ typedef enum
 */
 typedef struct _ELLUX_USART_INIT_T
 {
-    ellux_usart_mode_t mode;
     uint32_t BaudRate;
-    ellux_usart_parity_t ParityBit;
     uint32_t StopBitDuration;
+    ellux_usart_parity_t ParityBit;
+    ellux_usart_mode_t mode;
+    ellux_usart_hwblock_t HwBlock;
     bool RxEnabled;
     bool TxEnabled;
-
 } ellux_usart_init_t;
 /*
     Forward declaration of main handle struct
@@ -101,47 +101,44 @@ typedef enum
 */
 typedef void (ellux_usart_callback_t)(ellux_usart_handle_t* const uarthandler);
 
-
 /*
     Main struct to keep all options
 */
 struct _ELLUX_USART_HANDLE_T
 {
     ellux_usart_hwblock_t HwBlock;
-    ellux_usart_init_t Init;
     bool IsInited; // this variable may be useful if user want to change options after
                    // initialisation, for example to restart USART module to make changes
-    
+    uint8_t* TxBufPtr;
+    uint32_t TxBufSize;
+    uint32_t TxCounter;
     ellux_usart_callback_t* TxCallbackPtr;
+    uint8_t* RxBufPtr;
+    uint32_t RxBufSize;
+    uint32_t RxCounter;
     ellux_usart_callback_t* RxCallbacckPtr;
     
 };
 
 /*
-    Initialisation of given USART/UART module 
-    User must set all init options and hardware block number via direct change in
-    handle struct's fields or wrapping functions listed below, else it'll return error
+    Create init struct with default parameters 
+    After that, user must change them accordingly his preferences
     Returns status code
 */
-ellux_usart_status_t ELLUX_USART_Init(ellux_usart_handle_t* const uarthandler);
+ellux_usart_parity_t ELLUX_USART_Create(ellux_usart_init_t* const uartinit);
 
 /*
-    Wrapping Functions to set individual init options before or after initialisation
-    Return status code
+    Initialisation of given USART/UART module 
+    User must set all init options or it'll return error
+    Returns status code
 */
-ellux_usart_status_t ELLUX_USART_SetUsartModule(ellux_usart_handle_t* const uarthandler, const ellux_usart_hwblock_t hwblock);
+ellux_usart_status_t ELLUX_USART_Init(ellux_usart_handle_t* const uarthandler, const ellux_usart_init_t* const uartinit);
 
-ellux_usart_status_t ELLUX_USART_SetMode(ellux_usart_handle_t* const uarthandler, const ellux_usart_mode_t mode);
-
-ellux_usart_status_t ELLUX_USART_SetBaudRate(ellux_usart_handle_t* const uarthandler, const uint32_t baudrate);
-
-ellux_usart_status_t ELLUX_USART_SetParityBit(ellux_usart_handle_t* const uarthandler, const ellux_usart_parity_t paritybit);
-
-ellux_usart_status_t ELLUX_USART_SetStopBitDuration(ellux_usart_handle_t* const uarthandler, const uint32_t stopbitduration);
-
-ellux_usart_status_t ELLUX_USART_SetRxSwitch(ellux_usart_handle_t* const uarthandler, const bool rxenabled);
-
-ellux_usart_status_t ELLUX_USART_SetTxSwitch(ellux_usart_handle_t* const uarthandler, const bool txenabled);
+/*
+    Denitialisation of given USART/UART module 
+    Returns status code
+*/
+ellux_usart_status_t ELLUX_USART_DeInit(ellux_usart_handle_t* const uarthandler);
 
 
 /*

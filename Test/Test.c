@@ -31,8 +31,12 @@ General data for the second task:
 #include "ELLUX_USART_API.h"
 #include <string.h>
 
+#define MAX_BUFFERS 2
+
 ellux_usart_handle_t Uart1, Uart2;
-uint8_t rxbuff[128], txbuff[128];
+uint8_t Buffers[MAX_BUFFERS][128];
+uint8_t RxIndex=0, TxIndex=0;
+bool Recieved=false, Transmitted = false, Transmitting=false;
 
 static void Uart1Init();
 static void Uart2Init();
@@ -44,46 +48,65 @@ int main(void)
 
     Uart1Init();
     Uart2Init();
-    ELLUX_USART_Recieve(&Uart1, rxbuff, 128);
+    ELLUX_USART_Recieve(&Uart1, Buffers[RxIndex++], 128);
     while(1)
     {
-
+        if(Recieved)
+        {
+            Recieved=false;
+            ELLUX_USART_Recieve(&Uart1,Buffers[RxIndex],128);
+            if(!Transmitting)
+            {
+                Transmitting = true;
+                ELLUX_USART_Transmit(&Uart2,Buffers[TxIndex],128);
+            }
+        }
+        if(Transmitted)
+        {
+            Transmitted = false;
+            Transmitting = false;
+            uint8_t temp = RxIndex;
+            RxIndex = TxIndex;
+            TxIndex = temp;
+        }
     }
 }
 
 static void Uart1Init()
 {
-    ELLUX_USART_SetUsartModule(&Uart1, ELLUX_USART1);
-    ELLUX_USART_SetMode(&Uart1, ELLUX_USART_MODE_UART);
-    ELLUX_USART_SetBaudRate(&Uart1, 9600);
-    ELLUX_USART_SetParityBit(&Uart1, PARITY_BIT_NONE);
-    ELLUX_USART_SetStopBitDuration(&Uart1, 1);
-    ELLUX_USART_SetTxSwitch(&Uart1, false);
-    ELLUX_USART_SetRxSwitch(&Uart1, true);
+    ellux_usart_init_t Uart1Init;
+    ELLUX_USART_Create(&Uart1Init);
+    Uart1Init.BaudRate= 9600;
+    Uart1Init.HwBlock = ELLUX_USART1;
+    Uart1Init.mode = ELLUX_USART_MODE_UART;
+    Uart1Init.ParityBit = PARITY_BIT_NONE;
+    Uart1Init.StopBitDuration= 1;
+    Uart1Init.TxEnabled = false;
+    Uart1Init.RxEnabled = true;
+    ELLUX_USART_Init(&Uart1, &Uart1Init);
     ELLUX_USART_SetRxCallback(&Uart1, &Uart1RxCallback);
-    ELLUX_USART_Init(&Uart1);
 }
 
 static void Uart2Init()
 {
-    ELLUX_USART_SetUsartModule(&Uart2, ELLUX_USART1);
-    ELLUX_USART_SetMode(&Uart2, ELLUX_USART_MODE_UART);
-    ELLUX_USART_SetBaudRate(&Uart2, 115200);
-    ELLUX_USART_SetParityBit(&Uart2, PARITY_BIT_NONE);
-    ELLUX_USART_SetStopBitDuration(&Uart2, 1);
-    ELLUX_USART_SetTxSwitch(&Uart2, true);
-    ELLUX_USART_SetRxSwitch(&Uart2, false);
+    ellux_usart_init_t Uart2Init;
+    ELLUX_USART_Create(&Uart2Init);
+    Uart2Init.BaudRate= 115200;
+    Uart2Init.HwBlock = ELLUX_USART2;
+    Uart2Init.mode = ELLUX_USART_MODE_UART;
+    Uart2Init.ParityBit = PARITY_BIT_NONE;
+    Uart2Init.StopBitDuration= 1;
+    Uart2Init.TxEnabled = true;
+    Uart2Init.RxEnabled = false;
+    ELLUX_USART_Init(&Uart2, &Uart2Init);
     ELLUX_USART_SetTxCallback(&Uart2, &Uart2TxCallback);
-    ELLUX_USART_Init(&Uart2);
 }
 
 static void Uart1RxCallback(ellux_usart_handle_t* const uarthandler )
 {
-    memcpy(txbuff,rxbuff,128);
-    ELLUX_USART_Recieve(&Uart1,rxbuff,128);
-    ELLUX_USART_Transmit(&Uart2, txbuff,128);
+    Recieved=true;
 }
 static void Uart2TxCallback(ellux_usart_handle_t* const uarthandler )
 {
-    
+    Transmitted = true;
 }
