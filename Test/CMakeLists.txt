@@ -1,6 +1,3 @@
-Project(Usart_api_test)
-set(CMAKE_C_STANDARD C99)
-
-add_executable(Test test.c)
-
-target_link_libraries(ELLUX_USART_API)
+project(Usart_api_test)
+add_executable(test test.c)
+target_link_libraries(test PUBLIC ellux_usart_api)

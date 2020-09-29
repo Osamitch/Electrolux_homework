@@ -116,7 +116,7 @@ struct _ELLUX_USART_HANDLE_T
     uint8_t* RxBufPtr;
     uint32_t RxBufSize;
     uint32_t RxCounter;
-    ellux_usart_callback_t* RxCallbacckPtr;
+    ellux_usart_callback_t* RxCallbackPtr;
     
 };
 
@@ -125,7 +125,7 @@ struct _ELLUX_USART_HANDLE_T
     After that, user must change them accordingly his preferences
     Returns status code
 */
-ellux_usart_parity_t ELLUX_USART_Create(ellux_usart_init_t* const uartinit);
+void ELLUX_USART_DefaultConstruct(ellux_usart_init_t* const uartinit);
 
 /*
     Initialisation of given USART/UART module 
@@ -157,8 +157,8 @@ ellux_usart_status_t ELLUX_USART_SetRxCallback(ellux_usart_handle_t* const uarth
     Transmit function, data array must be allocated or declared statically
     Definitely returns error if transmitter is off
 */
-ellux_usart_status_t ELLUX_USART_Transmit(ellux_usart_handle_t* const uarthandler, const uint8_t* const data, const uint32_t length);
+ellux_usart_status_t ELLUX_USART_StartTransmit(ellux_usart_handle_t* const uarthandler, const uint8_t* const data, const uint32_t length);
 
-ellux_usart_status_t ELLUX_USART_Recieve(ellux_usart_handle_t* const uarthandler, uint8_t* const data, const uint32_t length);
+ellux_usart_status_t ELLUX_USART_StartRecieve(ellux_usart_handle_t* const uarthandler, uint8_t* const data, const uint32_t length);
 
 #endif // ELLUX_USART_API_H

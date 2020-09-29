@@ -48,26 +48,19 @@ int main(void)
 
     Uart1Init();
     Uart2Init();
-    ELLUX_USART_Recieve(&Uart1, Buffers[RxIndex++], 128);
+    ELLUX_USART_Recieve(&Uart1, Buffers[RxIndex], 128);
     while(1)
     {
         if(Recieved)
         {
             Recieved=false;
-            ELLUX_USART_Recieve(&Uart1,Buffers[RxIndex],128);
-            if(!Transmitting)
-            {
-                Transmitting = true;
-                ELLUX_USART_Transmit(&Uart2,Buffers[TxIndex],128);
-            }
+            ELLUX_USART_Transmit(&Uart2,Buffers[TxIndex],128);
+            TxIndex = (TxIndex+1) % MAX_BUFFERS;
         }
         if(Transmitted)
         {
-            Transmitted = false;
-            Transmitting = false;
-            uint8_t temp = RxIndex;
-            RxIndex = TxIndex;
-            TxIndex = temp;
+            Transmitted=false;
+            
         }
     }
 }
@@ -105,8 +98,11 @@ static void Uart2Init()
 static void Uart1RxCallback(ellux_usart_handle_t* const uarthandler )
 {
     Recieved=true;
+    RxIndex = (RxIndex+1) % MAX_BUFFERS;
+    ELLUX_USART_Recieve(&Uart1,Buffers[RxIndex],128);
 }
 static void Uart2TxCallback(ellux_usart_handle_t* const uarthandler )
 {
     Transmitted = true;
+    
 }
