@@ -9,3 +9,4 @@ target_include_directories(ELLUX_USART_API {CMAKE_CURRENT_SOURCE_DIR}/Inc)
 # For future use
 target_sources()
 
+add_subdirectory(Test)

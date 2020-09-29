@@ -25,65 +25,97 @@ Additionally:
 
 #ifndef ELLUX_USART_API_H
 #define ELLUX_USART_API_H
+
 #include <cstdint>
 #include <cstdbool>
-// Enum for status codes to avoid magic return numbers 
+
+/*
+    Enum for status codes to avoid magic return numbers 
+*/
 typedef enum 
 {
-    STATUS_OK =0, // No Error code
-    STATUS_ERROR=1  // Error code
+    USART_STATUS_OK = 0, // No Error code
+    USART_STATUS_ERROR = 1,  // Error code
+    USART_STATUS_NOT_INITIALISED = 2 // Error when user tries to invoke functions of not initialised usart module
     // Other types of errors' codes can be placed here
 
 } ellux_usart_status_t;
 
-// Enum for choosing usart/uart mode of hardware module
-// "defines are evil"
+/*
+    Enum for choosing usart/uart mode of hardware module
+    "defines are evil" 
+*/
 typedef enum
 {
     ELLUX_USART_MODE_UART =1,
     ELLUX_USART_MODE_USART
 } ellux_usart_mode_t;
 
+/*
+    Enum for status codes to avoid magic return numbers 
+*/
+typedef enum 
+{
+    PARITY_BIT_NONE = 0,
+    PARITY_BIT_ODD = 1,
+    PARITY_BIT_EVEN = 2
+} ellux_usart_parity_t;
 
 /*
     Struct to set init options
 */
 typedef struct _ELLUX_USART_INIT_T
 {
-    ellux_usart_mode_t mode =ELLUX_USART_MODE_UART;
+    ellux_usart_mode_t mode;
     uint32_t BaudRate;
-    uint8_t ParityBit;
+    ellux_usart_parity_t ParityBit;
     uint32_t StopBitDuration;
-    bool RxOn;
-    bool TxOn;
+    bool RxEnabled;
+    bool TxEnabled;
 
 } ellux_usart_init_t;
-
+/*
+    Forward declaration of main handle struct
+*/
+typedef struct _ELLUX_USART_HANDLE_T ellux_usart_handle_t;
 /*
     Enum for USART hardware blocks 
     Presumably, this variable must lead to memory address of given USART hardware block
-    Which is platfrom-specific
+    Which is platform-specific
 */
-typedef enum _ELLUX_USART_HWBLOCK_T
+typedef enum
 {
     ELLUX_USART1 = 1,
     ELLUX_USART2 = 2,
-    //  number of this addresses must be platfrom-specific
+    ELLUX_USART3 = 3,
+    ELLUX_USART4 = 4,
+    ELLUX_USART5 = 5,
+    ELLUX_USART6 = 6,
+    ELLUX_USART7 = 7,
+    ELLUX_USART8 = 8
+    //  number of modules must be platform-specific
 } ellux_usart_hwblock_t;
 
 /*
-    Main sturct to keep all options
+    Aliases for callback function pointers
 */
-typedef struct _ELLUX_USART_HANDLE_T
+typedef void (ellux_usart_callback_t)(ellux_usart_handle_t* const uarthandler);
+
+
+/*
+    Main struct to keep all options
+*/
+struct _ELLUX_USART_HANDLE_T
 {
     ellux_usart_hwblock_t HwBlock;
     ellux_usart_init_t Init;
     bool IsInited; // this variable may be useful if user want to change options after
                    // initialisation, for example to restart USART module to make changes
     
-    void* TxCallback(ellux_usart_handle_t* const huart, void* arg);
-    void* RxCallback(ellux_usart_handle_t* const huart, void* arg);
-} ellux_usart_handle_t;
+    ellux_usart_callback_t* TxCallbackPtr;
+    ellux_usart_callback_t* RxCallbacckPtr;
+    
+};
 
 /*
     Initialisation of given USART/UART module 
@@ -91,35 +123,45 @@ typedef struct _ELLUX_USART_HANDLE_T
     handle struct's fields or wrapping functions listed below, else it'll return error
     Returns status code
 */
-ellux_usart_status_t ELLUX_USART_Init(ellux_usart_handle_t* const huart);
+ellux_usart_status_t ELLUX_USART_Init(ellux_usart_handle_t* const uarthandler);
 
 /*
     Wrapping Functions to set individual init options before or after initialisation
     Return status code
 */
-ellux_usart_status_t ELLUX_USART_SetMode(ellux_usart_handle_t* const huart, const ellux_usart_mode_t mode);
+ellux_usart_status_t ELLUX_USART_SetUsartModule(ellux_usart_handle_t* const uarthandler, const ellux_usart_hwblock_t hwblock);
 
-ellux_usart_status_t ELLUX_USART_SetBaudRate(ellux_usart_handle_t* const huart, const uint32_t baudrate);
+ellux_usart_status_t ELLUX_USART_SetMode(ellux_usart_handle_t* const uarthandler, const ellux_usart_mode_t mode);
 
-ellux_usart_status_t ELLUX_USART_SetParityBit(ellux_usart_handle_t* const huart, const uint8_t paritybit);
+ellux_usart_status_t ELLUX_USART_SetBaudRate(ellux_usart_handle_t* const uarthandler, const uint32_t baudrate);
 
-ellux_usart_status_t ELLUX_USART_SetStopBitDuration(ellux_usart_handle_t* const huart, const uint32_t stopbitduration);
+ellux_usart_status_t ELLUX_USART_SetParityBit(ellux_usart_handle_t* const uarthandler, const ellux_usart_parity_t paritybit);
 
-ellux_usart_status_t ELLUX_USART_SetRxOnOff(ellux_usart_handle_t* const huart, const bool rxon);
+ellux_usart_status_t ELLUX_USART_SetStopBitDuration(ellux_usart_handle_t* const uarthandler, const uint32_t stopbitduration);
 
-ellux_usart_status_t ELLUX_USART_SetTxOnOff(ellux_usart_handle_t* const huart, const bool txon);
+ellux_usart_status_t ELLUX_USART_SetRxSwitch(ellux_usart_handle_t* const uarthandler, const bool rxenabled);
+
+ellux_usart_status_t ELLUX_USART_SetTxSwitch(ellux_usart_handle_t* const uarthandler, const bool txenabled);
+
 
 /*
-    Callback functions setters 
+    Set callback function of given usart module to invoke after transmit
+    Returns status code
 */
-ellux_usart_status_t ELLUX_USART_SetTxCallback(ellux_usart_handle_t* const huart, void* const callback(ellux_usart_handle_t* const huart,void* arg ));
+ellux_usart_status_t ELLUX_USART_SetTxCallback(ellux_usart_handle_t* const uarthandler, ellux_usart_callback_t* const txcallback);
 
-ellux_usart_status_t ELLUX_USART_SetRxCallback(ellux_usart_handle_t* const huart, void* const callback(ellux_usart_handle_t* const huart,void* arg ));
+/*
+    Set callback function of given usart module to invoke upon recieve
+    Returns status code
+*/
+ellux_usart_status_t ELLUX_USART_SetRxCallback(ellux_usart_handle_t* const uarthandler, ellux_usart_callback_t* const rxcallback);
 
 /*
     Transmit function, data array must be allocated or declared statically
     Definitely returns error if transmitter is off
 */
-ellux_usart_status_t ELLUX_USART_Transmit(ellux_usart_handle_t* const huart, uint8_t * const data, uint32_t length);
+ellux_usart_status_t ELLUX_USART_Transmit(ellux_usart_handle_t* const uarthandler, const uint8_t* const data, const uint32_t length);
+
+ellux_usart_status_t ELLUX_USART_Recieve(ellux_usart_handle_t* const uarthandler, uint8_t* const data, const uint32_t length);
 
 #endif // ELLUX_USART_API_H
